@@ -1,0 +1,10 @@
+{
+  "cmake.sourceDirectory": "${workspaceFolder}/cmake/windows",
+  "cmake.generator": "Ninja",
+  "cmake.buildDirectory": "${workspaceFolder}/build-win",
+  "cmake.configureArgs": [
+    "-DCMAKE_TOOLCHAIN_FILE=${env:USERPROFILE}/vcpkg/scripts/buildsystems/vcpkg.cmake",
+    "-DVCPKG_TARGET_TRIPLET=x64-windows"
+  ],
+  "cmake.buildArgs": ["-j", "1"]
+}

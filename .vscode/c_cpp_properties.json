@@ -1,0 +1,17 @@
+{
+  "configurations": [
+    {
+      "name": "WSL",
+      "compileCommands": "${workspaceFolder}/build-aruco-arm64/compile_commands.json",
+      "intelliSenseMode": "linux-clang-x64",
+      "cppStandard": "c++17"
+    },
+    {
+      "name": "Windows",
+      "compileCommands": "${workspaceFolder}/build-win/compile_commands.json",
+      "intelliSenseMode": "msvc-x64",
+      "cppStandard": "c++17"
+    }
+  ],
+  "version": 4
+}
