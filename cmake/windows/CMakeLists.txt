@@ -25,6 +25,8 @@ find_package(OpenCV REQUIRED COMPONENTS
 add_library(aruco_unity SHARED
   "${SRC_ROOT}/aruco_unity.cpp"
   "${SRC_ROOT}/aruco_unity.h"
+  "${SRC_ROOT}/aruco_unity_debug_dump.cpp"
+  "${SRC_ROOT}/aruco_unity_debug_dump.h"
 )
 
 set_target_properties(aruco_unity PROPERTIES
@@ -79,38 +81,61 @@ endif()
 # ---------------------------
 # 4) Post-build: populate bin/ and bin/unity/
 # ---------------------------
+# ---- Runtime output to bin/ ----
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib")
+
+# ... targets aruco_unity / aruco_unity_test ...
+
 if (WIN32)
+  # Ninja is single-config -> decide by CMAKE_BUILD_TYPE
+  set(IS_DEBUG_BUILD FALSE)
+  if (CMAKE_BUILD_TYPE STREQUAL "Debug" OR CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
+    set(IS_DEBUG_BUILD TRUE)
+  endif()
+
+  if (IS_DEBUG_BUILD)
+    set(VCPKG_RUNTIME_BIN "${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/debug/bin")
+    set(UNITY_PACK_DIR "$<TARGET_FILE_DIR:aruco_unity_test>/unity_debug")
+  else()
+    set(VCPKG_RUNTIME_BIN "${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/bin")
+    set(UNITY_PACK_DIR "$<TARGET_FILE_DIR:aruco_unity_test>/unity")
+  endif()
+
   add_custom_command(TARGET aruco_unity_test POST_BUILD
-    # Ensure folders
-    COMMAND ${CMAKE_COMMAND} -E make_directory
-      "$<TARGET_FILE_DIR:aruco_unity_test>/unity"
+    # Ensure folder
+    COMMAND ${CMAKE_COMMAND} -E make_directory "${UNITY_PACK_DIR}"
+
+    # Copy plugin DLL into package folder
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+      "$<TARGET_FILE:aruco_unity>"
+      "${UNITY_PACK_DIR}/aruco_unity.dll"
+
+    # Copy PDB (only exists on MSVC debug-ish builds)
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+      "$<TARGET_PDB_FILE:aruco_unity>"
+      "${UNITY_PACK_DIR}/aruco_unity.pdb"
+
+    # Copy vcpkg runtime deps into package folder (only correct bin for this build)
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+      "${VCPKG_RUNTIME_BIN}"
+      "${UNITY_PACK_DIR}"
+
+    # Also copy plugin + deps next to exe so aruco_unity_test runs
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+      "$<TARGET_FILE:aruco_unity>"
+      "$<TARGET_FILE_DIR:aruco_unity_test>/aruco_unity.dll"
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+      "${VCPKG_RUNTIME_BIN}"
+      "$<TARGET_FILE_DIR:aruco_unity_test>"
 
     # Copy test image next to exe
     COMMAND ${CMAKE_COMMAND} -E copy_if_different
       "${SRC_ROOT}/test1.jpg"
       "$<TARGET_FILE_DIR:aruco_unity_test>/test1.jpg"
 
-    # Copy our plugin DLL next to exe (so test runs)
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different
-      "$<TARGET_FILE:aruco_unity>"
-      "$<TARGET_FILE_DIR:aruco_unity_test>/aruco_unity.dll"
-
-    # Copy our plugin DLL into unity/ (for Unity)
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different
-      "$<TARGET_FILE:aruco_unity>"
-      "$<TARGET_FILE_DIR:aruco_unity_test>/unity/aruco_unity.dll"
-
-    # Copy vcpkg runtime DLLs next to exe (so test runs)
-    COMMAND ${CMAKE_COMMAND} -E echo "Copying vcpkg runtime DLLs from: ${VCPKG_RUNTIME_BIN}"
-    COMMAND ${CMAKE_COMMAND} -E copy_directory
-      "${VCPKG_RUNTIME_BIN}"
-      "$<TARGET_FILE_DIR:aruco_unity_test>"
-
-    # Copy vcpkg runtime DLLs into unity/ (for Unity)
-    COMMAND ${CMAKE_COMMAND} -E copy_directory
-      "${VCPKG_RUNTIME_BIN}"
-      "$<TARGET_FILE_DIR:aruco_unity_test>/unity"
-
     VERBATIM
   )
 endif()
+

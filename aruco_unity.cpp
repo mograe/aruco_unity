@@ -65,6 +65,8 @@ extern "C" int ARUCO_UNITY_CALL DetectArucoGray8(
 
     cv::Mat img(height, width, CV_8UC1, (void*)gray);
 
+    //bool isSaved = cv::imwrite("C:/Users/Eugene/AppData/LocalLow/DefaultCompany/ArUcoTest/dump_cpp.png", img);
+
     cv::Mat K(3, 3, CV_32F, (void*)K9);
     cv::Mat distCoeffs = MakeDistCoeffs(dist, distCount);
 
@@ -142,3 +144,37 @@ extern "C" int ARUCO_UNITY_CALL DetectArucoEncodedImage(
         maxMarkers
     );
 }
+
+
+extern "C" int ARUCO_UNITY_CALL DetectArucoRGBA8(
+    const uint8_t* rgba, int width, int height,
+    const float* K9,
+    const float* dist, int distCount,
+    float markerLength,
+    int dictId,
+    int* outIds,
+    float* outRvecs,
+    float* outTvecs,
+    int maxMarkers
+) 
+{
+    if(!rgba || width <= 0 || height <= 0) return 0;
+    
+    cv::Mat rgbaMat(height, width, CV_8UC4, (void*)rgba);
+    
+    cv::Mat gray;
+    cv::cvtColor(rgbaMat, gray, cv::COLOR_RGBA2GRAY);
+
+    return DetectArucoGray8(
+        gray.data, gray.cols, gray.rows,
+        K9,
+        dist, distCount,
+        markerLength,
+        dictId,
+        outIds,
+        outRvecs,
+        outTvecs,
+        maxMarkers
+    );
+}
+

@@ -60,6 +60,21 @@ ARUCO_UNITY_API int ARUCO_UNITY_CALL DetectArucoEncodedImage(
     int maxMarkers
 );
 
+// Detect ArUco markers from raw RGBA8 frame (width*height*4 bytes).
+// rgba: RGBA pixel buffer (row-major, tightly packed)
+// Returns number of detected markers (<= maxMarkers).
+ARUCO_UNITY_API int ARUCO_UNITY_CALL DetectArucoRGBA8(
+    const uint8_t* rgba, int width, int height,
+    const float* K9,
+    const float* dist, int distCount,
+    float markerLength,
+    int dictId,
+    int* outIds,
+    float* outRvecs,
+    float* outTvecs,
+    int maxMarkers
+);
+
 #ifdef __cplusplus
 } // extern "C"
 #endif
