@@ -1,5 +1,5 @@
 {
-  "cmake.sourceDirectory": "${workspaceFolder}/cmake/windows",
+  "cmake.sourceDirectory": "${workspaceFolder}/cmake/android",
   "cmake.generator": "Ninja",
   "cmake.buildDirectory": "${workspaceFolder}/build-win-${buildType}",
   "cmake.configureArgs": [
