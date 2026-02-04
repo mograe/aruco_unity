@@ -1,10 +1,18 @@
 {
   "cmake.sourceDirectory": "${workspaceFolder}/cmake/windows",
   "cmake.generator": "Ninja",
-  "cmake.buildDirectory": "${workspaceFolder}/build-win",
+  "cmake.buildDirectory": "${workspaceFolder}/build-win-${buildType}",
   "cmake.configureArgs": [
     "-DCMAKE_TOOLCHAIN_FILE=${env:USERPROFILE}/vcpkg/scripts/buildsystems/vcpkg.cmake",
     "-DVCPKG_TARGET_TRIPLET=x64-windows"
   ],
-  "cmake.buildArgs": ["-j", "1"]
+  "cmake.buildArgs": ["-j", "1"],
+  "cmake.configureSettings": {
+    "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+  },
+  "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools",
+  "cmake.environment": {
+    "ANDROID_NDK": "C:/Users/Eugene/AppData/Local/Android/Sdk/ndk/27.2.12479018"
+  },
+  "cmake.useCMakePresets": "always"
 }
